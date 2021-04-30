@@ -1,27 +1,24 @@
 namespace Graphpinator\Exception\Value;
 
-final class InvalidValue extends \Graphpinator\Exception\Value\ValueError
-{
-    public const MESSAGE = 'Invalid value resolved for type "%s" - got %s.';
+use namespace HH\Lib\Str;
 
-    public function __construct(string $type, mixed $rawValue, bool $outputable)
-    {
-        $this->messageArgs = [$type, $this->printValue($rawValue)];
+final class InvalidValue extends \Graphpinator\Exception\Value\ValueError {
+    public function __construct(string $type, mixed $rawValue, bool $outputable) {
+        $message = Str\format('Invalid value resolved for type "%s" - got %s.', $type, $this->printValue($rawValue));
 
-        parent::__construct($outputable);
+        parent::__construct($message, $outputable);
     }
 
-    private function printValue(mixed $rawValue) : string
-    {
+    private function printValue(mixed $rawValue): string {
         if ($rawValue === null || \is_scalar($rawValue)) {
-            return \json_encode($rawValue, \JSON_THROW_ON_ERROR);
+            return \json_encode($rawValue);
         }
 
         if (\is_array($rawValue)) {
             return 'list';
         }
 
-        if ($rawValue instanceof \stdClass) {
+        if ($rawValue is KeyedContainer<_, _>) {
             return 'object';
         }
 

@@ -2,16 +2,9 @@ namespace Graphpinator\Type;
 
 /**
  * Class InterfaceSet which is type safe container for InterfaceTypes.
- *
- * @method \Graphpinator\Type\InterfaceType current() : object
- * @method \Graphpinator\Type\InterfaceType offsetGet($offset) : object
  */
-final class InterfaceSet extends \Infinityloop\Utils\ImplicitObjectMap
-{
-    protected const INNER_CLASS = \Graphpinator\Type\InterfaceType::class;
-
-    protected function getKey(object $object) : string
-    {
+final class InterfaceSet extends \Infinityloop\Utils\ObjectMap<string, InterfaceType> {
+    protected function getKey(InterfaceType $object): string {
         return $object->getName();
     }
 }

@@ -1,7 +1,6 @@
 namespace Graphpinator\Value;
 
 final class ConvertRawValueVisitor implements \Graphpinator\Typesystem\TypeVisitor {
-    use \Nette\SmartObject;
 
     public function __construct(private mixed $rawValue, private \Graphpinator\Common\Path $path) {}
 
