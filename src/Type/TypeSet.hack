@@ -6,12 +6,9 @@ namespace Graphpinator\Type;
  * @method \Graphpinator\Type\Type current() : object
  * @method \Graphpinator\Type\Type offsetGet($offset) : object
  */
-final class TypeSet extends \Infinityloop\Utils\ImplicitObjectMap
-{
-    protected const INNER_CLASS = \Graphpinator\Type\Type::class;
+final class TypeSet extends \Infinityloop\Utils\ObjectSet<\Graphpinator\Type\Type> {
 
-    protected function getKey(object $object) : string
-    {
+    protected function getKey(\Graphpinator\Type\Type $object): string {
         return $object->getName();
     }
 }

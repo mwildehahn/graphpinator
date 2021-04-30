@@ -30,16 +30,16 @@ final class DirectiveUsageSet extends \Infinityloop\Utils\ObjectSet<DirectiveUsa
 
         foreach ($biggerSet as $index => $usage) {
             if ($smallerSet->offsetExists($childIndex)) {
-                $usage->getDirective()->validateVariance(
-                    $usage->getArgumentValues(),
-                    $smallerSet->offsetGet($childIndex)->getArgumentValues(),
-                );
+                // $usage->getDirective()->validateVariance(
+                //     $usage->getArgumentValues(),
+                //     $smallerSet->offsetGet($childIndex)->getArgumentValues(),
+                // );
                 ++$childIndex;
 
                 continue;
             }
 
-            $usage->getDirective()->validateVariance($usage->getArgumentValues(), null);
+            // $usage->getDirective()->validateVariance($usage->getArgumentValues(), null);
         }
     }
 }

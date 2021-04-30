@@ -3,22 +3,21 @@ namespace Graphpinator\Utils;
 /**
  * Trait TDeprecatable which manages deprecated info for classes which support it.
  */
-trait TDeprecatable
-{
-    public function setDeprecated(?string $reason = null) : self
-    {
+trait TDeprecatable<T> implements IAddDirectives<T> {
+    protected \Graphpinator\DirectiveUsage\DirectiveUsageSet $directiveUsages;
+
+    public function setDeprecated(?string $reason = null): this {
         $this->addDirective(
             \Graphpinator\Container\Container::directiveDeprecated(),
-            ['reason' => $reason],
+            new \Graphpinator\Argument\ArgumentSet(dict['reason' => $reason]),
         );
 
         return $this;
     }
 
-    public function isDeprecated() : bool
-    {
+    public function isDeprecated(): bool {
         foreach ($this->directiveUsages as $directive) {
-            if ($directive->getDirective() instanceof \Graphpinator\Directive\Spec\DeprecatedDirective) {
+            if ($directive->getDirective() is \Graphpinator\Directive\Spec\DeprecatedDirective) {
                 return true;
             }
         }
@@ -26,11 +25,10 @@ trait TDeprecatable
         return false;
     }
 
-    public function getDeprecationReason() : ?string
-    {
+    public function getDeprecationReason(): ?string {
         foreach ($this->directiveUsages as $directive) {
-            if ($directive->getDirective() instanceof \Graphpinator\Directive\Spec\DeprecatedDirective) {
-                return $directive->getArgumentValues()->offsetGet('reason')->getValue()->getRawValue();
+            if ($directive->getDirective() is \Graphpinator\Directive\Spec\DeprecatedDirective) {
+                return (string)$directive->getArgumentValues()->offsetGet('reason')->getValue()->getRawValue();
             }
         }
 

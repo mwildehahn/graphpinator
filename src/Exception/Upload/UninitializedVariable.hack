@@ -1,6 +1,8 @@
 namespace Graphpinator\Exception\Upload;
 
-final class UninitializedVariable extends \Graphpinator\Exception\Upload\UploadError
-{
-    public const MESSAGE = 'Variable for Upload must be initialized.';
+final class UninitializedVariable extends \Graphpinator\Exception\Upload\UploadError {
+    public function __construct() {
+        $message = 'Variable for Upload must be initialized.';
+        parent::__construct($message);
+    }
 }

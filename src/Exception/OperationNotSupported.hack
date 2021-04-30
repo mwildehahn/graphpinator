@@ -1,6 +1,8 @@
 namespace Graphpinator\Exception;
 
-final class OperationNotSupported extends \Graphpinator\Exception\GraphpinatorBase
-{
-    public const MESSAGE = 'This method is not supported on this object.';
+final class OperationNotSupported extends \Graphpinator\Exception\GraphpinatorBase {
+    public function __construct() {
+        $message = 'This method is not supported on this object.';
+        parent::__construct($message);
+    }
 }

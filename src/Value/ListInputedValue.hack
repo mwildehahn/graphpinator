@@ -1,56 +1,48 @@
 namespace Graphpinator\Value;
 
-final class ListInputedValue extends \Graphpinator\Value\ListValue implements \Graphpinator\Value\InputedValue
-{
-    public function __construct(\Graphpinator\Type\ListType $type, array $value)
-    {
+final class ListInputedValue
+    extends \Graphpinator\Value\ListValue<InputedValue>
+    implements \Graphpinator\Value\InputedValue {
+    public function __construct(\Graphpinator\Type\ListType $type, vec<\Graphpinator\Value\InputedValue> $value) {
         $this->type = $type;
         $this->value = $value;
     }
 
-    public function getRawValue(bool $forResolvers = false) : array
-    {
-        $return = [];
+    public function getRawValue(bool $forResolvers = false): vec<mixed> {
+        $return = vec[];
 
         foreach ($this->value as $listItem) {
-            \assert($listItem instanceof InputedValue);
-
-            $return[] = $listItem->getRawValue($forResolvers);
+            $listItem as InputedValue;
+            $return[] = $listItem->getRawValue();
         }
 
         return $return;
     }
 
-    public function getType() : \Graphpinator\Type\ListType
-    {
+    public function getType(): \Graphpinator\Type\ListType {
         return $this->type;
     }
 
-    public function printValue() : string
-    {
-        $component = [];
+    public function printValue(): string {
+        $component = vec[];
 
         foreach ($this->value as $value) {
-            \assert($value instanceof InputedValue);
-
+            $value as InputedValue;
             $component[] = $value->printValue();
         }
 
-        return '[' . \implode(',', $component) . ']';
+        return '['.\implode(',', $component).']';
     }
 
-    public function applyVariables(\Graphpinator\Normalizer\VariableValueSet $variables) : void
-    {
+    public function applyVariables(\Graphpinator\Normalizer\VariableValueSet $variables): void {
         foreach ($this->value as $value) {
-            \assert($value instanceof InputedValue);
-
+            $value as InputedValue;
             $value->applyVariables($variables);
         }
     }
 
-    public function isSame(Value $compare) : bool
-    {
-        if (!$compare instanceof self) {
+    public function isSame(?InputedValue $compare): bool {
+        if (!$compare is this) {
             return false;
         }
 
@@ -61,7 +53,7 @@ final class ListInputedValue extends \Graphpinator\Value\ListValue implements \G
         }
 
         foreach ($this->value as $key => $value) {
-            \assert($value instanceof InputedValue);
+            $value as InputedValue;
 
             if (!\array_key_exists($key, $secondArray) || !$value->isSame($secondArray[$key])) {
                 return false;

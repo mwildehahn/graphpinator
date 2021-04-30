@@ -3,16 +3,15 @@ namespace Graphpinator\Type\Contract;
 /**
  * Trait TInterfaceImplementor which is implementation of InterfaceImplementor interface.
  */
-trait TInterfaceImplementor
-{
-    protected ?\Graphpinator\Field\FieldSet $fields = null;
+trait TInterfaceImplementor<Ti as \Graphpinator\Field\Field, T as \Infinityloop\Utils\ObjectMap<string, Ti>>
+    implements \Graphpinator\Utils\INameable {
+    protected ?T $fields = null;
     protected \Graphpinator\Type\InterfaceSet $implements;
 
     /**
      * Returns interfaces, which this type implements.
      */
-    public function getInterfaces() : \Graphpinator\Type\InterfaceSet
-    {
+    public function getInterfaces(): \Graphpinator\Type\InterfaceSet {
         return $this->implements;
     }
 
@@ -20,10 +19,9 @@ trait TInterfaceImplementor
      * Checks whether this type implements given interface.
      * @param \Graphpinator\Type\InterfaceType $interface
      */
-    public function implements(\Graphpinator\Type\InterfaceType $interface) : bool
-    {
+    public function implements(\Graphpinator\Type\InterfaceType $interface): bool {
         foreach ($this->implements as $temp) {
-            if ($temp::class === $interface::class || $temp->implements($interface)) {
+            if ($temp->implements($interface)) {
                 return true;
             }
         }
@@ -36,13 +34,14 @@ trait TInterfaceImplementor
      * This is (apart from performance considerations) done because of a possible cyclic dependency across fields.
      * Fields are therefore defined by implementing this method, instead of passing FieldSet to constructor.
      */
-    abstract protected function getFieldDefinition() : \Graphpinator\Field\FieldSet;
+    abstract protected function getFieldDefinition(): T;
+    abstract public function getFields(): T;
+    abstract public function getDirectiveUsages(): \Graphpinator\DirectiveUsage\DirectiveUsageSet;
 
     /**
      * Method to validate contract defined by interfaces - whether fields and their type match.
      */
-    protected function validateInterfaceContract() : void
-    {
+    protected function validateInterfaceContract(): void {
         foreach ($this->implements as $interface) {
             $interface->getDirectiveUsages()->validateInvariance($this->getDirectiveUsages());
 
@@ -67,7 +66,7 @@ trait TInterfaceImplementor
 
                 try {
                     $fieldContract->getDirectiveUsages()->validateCovariance($field->getDirectiveUsages());
-                } catch (\Throwable) {
+                } catch (\Throwable $_) {
                     // TODO: print information from received exception
                     throw new \Graphpinator\Exception\Type\FieldDirectiveNotCovariant(
                         $this->getName(),
@@ -98,8 +97,9 @@ trait TInterfaceImplementor
                     }
 
                     try {
-                        $argumentContract->getDirectiveUsages()->validateContravariance($argument->getDirectiveUsages());
-                    } catch (\Throwable) {
+                        $argumentContract->getDirectiveUsages()
+                            ->validateContravariance($argument->getDirectiveUsages());
+                    } catch (\Throwable $_) {
                         // TODO: print information from received exception
                         throw new \Graphpinator\Exception\Type\ArgumentDirectiveNotContravariant(
                             $this->getName(),
@@ -109,10 +109,13 @@ trait TInterfaceImplementor
                         );
                     }
                 }
-                
+
                 if ($field->getArguments()->count() !== $fieldContract->getArguments()->count()) {
                     foreach ($field->getArguments() as $argument) {
-                        if (!$fieldContract->getArguments()->offsetExists($argument->getName()) && $argument->getDefaultValue() === null) {
+                        if (
+                            !$fieldContract->getArguments()->offsetExists($argument->getName()) &&
+                            $argument->getDefaultValue() === null
+                        ) {
                             throw new \Graphpinator\Exception\Type\InterfaceContractNewArgumentWithoutDefault(
                                 $this->getName(),
                                 $interface->getName(),

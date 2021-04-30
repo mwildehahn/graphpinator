@@ -6,14 +6,17 @@ final class ConvertRawValueVisitor implements \Graphpinator\Typesystem\TypeVisit
 
     public function visitType(\Graphpinator\Type\Type $type): mixed {
         // nothing here
+        return null;
     }
 
     public function visitInterface(\Graphpinator\Type\InterfaceType $interface): mixed {
         // nothing here
+        return null;
     }
 
     public function visitUnion(\Graphpinator\Type\UnionType $union): mixed {
         // nothing here
+        return null;
     }
 
     public function visitInput(\Graphpinator\Type\InputType $input): InputedValue {
@@ -25,6 +28,7 @@ final class ConvertRawValueVisitor implements \Graphpinator\Typesystem\TypeVisit
             throw new \Graphpinator\Exception\Value\InvalidValue($input->getName(), $this->rawValue, true);
         }
 
+        /* HH_FIXME[4110] */
         return new InputValue($input, self::convertArgumentSet($input->getArguments(), $this->rawValue, $this->path));
     }
 
@@ -50,10 +54,10 @@ final class ConvertRawValueVisitor implements \Graphpinator\Typesystem\TypeVisit
         $value = $notNull->getInnerType()->accept($this);
 
         if ($value is \Graphpinator\Value\NullValue) {
-            throw new \Graphpinator\Exception\Value\ValueCannotBeNull(true);
+            throw new \Graphpinator\Exception\Value\ValueCannotBeNull('', true);
         }
 
-        return $value;
+        return $value as InputedValue;
     }
 
     public function visitList(\Graphpinator\Type\ListType $list): InputedValue {
@@ -71,11 +75,13 @@ final class ConvertRawValueVisitor implements \Graphpinator\Typesystem\TypeVisit
         $inner = vec[];
         $listValue = $this->rawValue;
 
-        foreach ($listValue as $index => $rawValue) {
-            $this->path->add($index.' <list index>');
-            $this->rawValue = $rawValue;
-            $inner[] = $innerType->accept($this);
-            $this->path->pop();
+        if ($listValue is KeyedContainer<_, _>) {
+            foreach ($listValue as $index => $rawValue) {
+                $this->path->add($index.' <list index>');
+                $this->rawValue = $rawValue;
+                $inner[] = $innerType->accept($this) as InputedValue;
+                $this->path->pop();
+            }
         }
 
         $this->rawValue = $listValue;
@@ -85,12 +91,12 @@ final class ConvertRawValueVisitor implements \Graphpinator\Typesystem\TypeVisit
 
     public static function convertArgumentSet(
         \Graphpinator\Argument\ArgumentSet $arguments,
-        \stdClass $rawValue,
+        dict<string, mixed> $rawValue,
         \Graphpinator\Common\Path $path,
-    ): \stdClass {
-        $rawValue = self::mergeRaw($rawValue, (object)$arguments->getRawDefaults());
+    ): dict<string, ArgumentValue> {
+        $rawValue = self::mergeRaw($rawValue, $arguments->getRawDefaults());
 
-        foreach ((array)$rawValue as $name => $temp) {
+        foreach ($rawValue as $name => $temp) {
             if ($arguments->offsetExists($name)) {
                 continue;
             }
@@ -98,13 +104,15 @@ final class ConvertRawValueVisitor implements \Graphpinator\Typesystem\TypeVisit
             throw new \Graphpinator\Normalizer\Exception\UnknownArgument($name);
         }
 
-        $inner = new \stdClass();
+        $inner = dict[];
 
         foreach ($arguments as $argument) {
             $path->add($argument->getName().' <argument>');
-            $inner->{
-                $argument->getName()
-            } = self::convertArgument($argument, $rawValue->{$argument->getName()} ?? null, $path);
+            $inner[$argument->getName()] = self::convertArgument(
+                $argument,
+                $rawValue->{$argument->getName()} ?? null,
+                $path,
+            );
             $path->pop();
         }
 
@@ -124,7 +132,7 @@ final class ConvertRawValueVisitor implements \Graphpinator\Typesystem\TypeVisit
 
         return new ArgumentValue(
             $argument,
-            $argument->getType()->accept(new ConvertRawValueVisitor($rawValue, $path)),
+            $argument->getType()->accept(new ConvertRawValueVisitor($rawValue, $path)) as InputedValue,
             false,
         );
     }

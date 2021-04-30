@@ -1,32 +1,27 @@
 namespace Graphpinator\Type;
 
-abstract class UnionType extends \Graphpinator\Type\Contract\AbstractDefinition
-{
+abstract class UnionType extends \Graphpinator\Type\Contract\AbstractDefinition {
     use \Graphpinator\Type\Contract\TMetaFields;
 
     protected \Graphpinator\Type\TypeSet $types;
 
-    public function __construct(\Graphpinator\Type\TypeSet $types)
-    {
+    public function __construct(\Graphpinator\Type\TypeSet $types) {
         $this->types = $types;
     }
 
-    final public function getTypes() : \Graphpinator\Type\TypeSet
-    {
+    final public function getTypes(): \Graphpinator\Type\TypeSet {
         return $this->types;
     }
 
-    final public function isInstanceOf(\Graphpinator\Type\Contract\Definition $type) : bool
-    {
-        if ($type instanceof NotNullType) {
+    final public function isInstanceOf(\Graphpinator\Type\Contract\Definition $type): bool {
+        if ($type is NotNullType) {
             return $this->isInstanceOf($type->getInnerType());
         }
 
-        return $type instanceof static;
+        return $type is this;
     }
 
-    final public function isImplementedBy(\Graphpinator\Type\Contract\Definition $type) : bool
-    {
+    final public function isImplementedBy(\Graphpinator\Type\Contract\Definition $type): bool {
         foreach ($this->types as $temp) {
             if ($temp->isInstanceOf($type)) {
                 return true;
@@ -36,8 +31,7 @@ abstract class UnionType extends \Graphpinator\Type\Contract\AbstractDefinition
         return false;
     }
 
-    final public function accept(\Graphpinator\Typesystem\NamedTypeVisitor $visitor) : mixed
-    {
+    final public function accept(\Graphpinator\Typesystem\NamedTypeVisitor $visitor): mixed {
         return $visitor->visitUnion($this);
     }
 }

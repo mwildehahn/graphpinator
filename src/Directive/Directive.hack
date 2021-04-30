@@ -16,12 +16,13 @@ abstract class Directive implements \Graphpinator\Directive\Contract\Definition 
         return static::DESCRIPTION;
     }
 
-    final public function getLocations(): array {
+    final public function getLocations(): vec<string> {
         $locations = vec[];
         $reflection = new \ReflectionClass($this);
 
         foreach ($reflection->getInterfaces() as $interface) {
             if (\array_key_exists($interface->getName(), self::INTERFACE_TO_LOCATION)) {
+                /* HH_FIXME[4324] */
                 $locations = \array_merge($locations, self::INTERFACE_TO_LOCATION[$interface->getName()]);
             }
         }
@@ -34,12 +35,12 @@ abstract class Directive implements \Graphpinator\Directive\Contract\Definition 
     }
 
     final public function getArguments(): \Graphpinator\Argument\ArgumentSet {
-        if (!$this->arguments is \Graphpinator\Argument\ArgumentSet) {
+        if ($this->arguments is null) {
             $this->arguments = $this->getFieldDefinition();
             $this->afterGetFieldDefinition();
         }
 
-        return $this->arguments;
+        return $this->arguments as \Graphpinator\Argument\ArgumentSet;
     }
 
     final public function accept(\Graphpinator\Typesystem\EntityVisitor $visitor): mixed {

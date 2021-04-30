@@ -7,6 +7,8 @@ abstract class InterfaceType
     use \Graphpinator\Type\Contract\TMetaFields;
     use \Graphpinator\Utils\THasDirectives;
 
+    protected ?\Graphpinator\Field\FieldSet $fields = null;
+
     public function __construct(?\Graphpinator\Type\InterfaceSet $implements = null) {
         $this->implements = $implements ?? new \Graphpinator\Type\InterfaceSet();
         $this->directiveUsages = new \Graphpinator\DirectiveUsage\DirectiveUsageSet();
@@ -17,7 +19,7 @@ abstract class InterfaceType
             return $this->isInstanceOf($type->getInnerType());
         }
 
-        return $type is self || ($type is self && $this->implements($type));
+        return \is_a($type, static::class) || ($type is this && $this->implements($type));
     }
 
     final public function isImplementedBy(\Graphpinator\Type\Contract\Definition $type): bool {
@@ -29,7 +31,7 @@ abstract class InterfaceType
     }
 
     final public function getFields(): \Graphpinator\Field\FieldSet {
-        if (!$this->fields is \Graphpinator\Field\FieldSet) {
+        if ($this->fields is null) {
             $this->fields = new \Graphpinator\Field\FieldSet();
 
             foreach ($this->implements as $interfaceType) {
@@ -43,7 +45,7 @@ abstract class InterfaceType
             }
         }
 
-        return $this->fields;
+        return $this->fields as \Graphpinator\Field\FieldSet;
     }
 
     final public function accept(\Graphpinator\Typesystem\NamedTypeVisitor $visitor): mixed {

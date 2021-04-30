@@ -1,57 +1,53 @@
 namespace Graphpinator\Introspection;
 
-final class Directive extends \Graphpinator\Type\Type
-{
-    protected const NAME = '__Directive';
-    protected const DESCRIPTION = 'Built-in introspection type.';
+final class Directive extends \Graphpinator\Type\Type {
+    const NAME = '__Directive';
+    const DESCRIPTION = 'Built-in introspection type.';
 
-    public function __construct(
-        private \Graphpinator\Container\Container $container,
-    )
-    {
+    public function __construct(private \Graphpinator\Container\Container $container) {
         parent::__construct();
     }
 
-    public function validateNonNullValue(mixed $rawValue) : bool
-    {
-        return $rawValue instanceof \Graphpinator\Directive\Directive;
+    public function validateNonNullValue(mixed $rawValue): bool {
+        return $rawValue is \Graphpinator\Directive\Directive;
     }
 
-    protected function getFieldDefinition() : \Graphpinator\Field\ResolvableFieldSet
-    {
-        return new \Graphpinator\Field\ResolvableFieldSet([
-            new \Graphpinator\Field\ResolvableField(
+    protected function getFieldDefinition(): \Graphpinator\Field\ResolvableFieldSet {
+        return new \Graphpinator\Field\ResolvableFieldSet(dict[
+            'name' => new \Graphpinator\Field\ResolvableField(
                 'name',
                 \Graphpinator\Container\Container::String()->notNull(),
-                static function (\Graphpinator\Directive\Directive $directive) : string {
-                    return $directive->getName();
+                static function(shape(?'directive' => \Graphpinator\Directive\Directive, ...) $args): string {
+                    return $args['directive']->getName();
                 },
             ),
-            new \Graphpinator\Field\ResolvableField(
+            'description' => new \Graphpinator\Field\ResolvableField(
                 'description',
                 \Graphpinator\Container\Container::String(),
-                static function (\Graphpinator\Directive\Directive $directive) : ?string {
-                    return $directive->getDescription();
+                static function(shape(?'directive' => \Graphpinator\Directive\Directive, ...) $args): ?string {
+                    return $args['directive']->getDescription();
                 },
             ),
-            new \Graphpinator\Field\ResolvableField(
+            'locations' => new \Graphpinator\Field\ResolvableField(
                 'locations',
                 $this->container->getType('__DirectiveLocation')->notNullList(),
-                static function (\Graphpinator\Directive\Directive $directive) : array {
-                    return $directive->getLocations();
+                static function(shape(?'directive' => \Graphpinator\Directive\Directive, ...) $args): array {
+                    return $args['directive']->getLocations();
                 },
             ),
-            new \Graphpinator\Field\ResolvableField(
+            'args' => new \Graphpinator\Field\ResolvableField(
                 'args',
                 $this->container->getType('__InputValue')->notNullList(),
-                static function (\Graphpinator\Directive\Directive $directive) : \Graphpinator\Argument\ArgumentSet {
+                static function(
+                    shape(?'directive' => \Graphpinator\Directive\Directive, ...) $args,
+                ): \Graphpinator\Argument\ArgumentSet {
                     return $directive->getArguments();
                 },
             ),
-            new \Graphpinator\Field\ResolvableField(
+            'isRepeatable' => new \Graphpinator\Field\ResolvableField(
                 'isRepeatable',
                 \Graphpinator\Container\Container::Boolean()->notNull(),
-                static function (\Graphpinator\Directive\Directive $directive) : bool {
+                static function(shape(?'directive' => \Graphpinator\Directive\Directive, ...) $args): bool {
                     return $directive->isRepeatable();
                 },
             ),

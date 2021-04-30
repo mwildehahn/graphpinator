@@ -42,7 +42,7 @@ final class Argument implements \Graphpinator\Typesystem\Component {
 
     public function addDirective(
         \Graphpinator\Directive\Contract\ArgumentDefinitionLocation $directive,
-        vec<mixed> $arguments = vec[],
+        \Graphpinator\Argument\ArgumentSet $arguments = new \Graphpinator\Argument\ArgumentSet(),
     ): this {
         $usage = new \Graphpinator\DirectiveUsage\DirectiveUsage($directive, $arguments);
 
