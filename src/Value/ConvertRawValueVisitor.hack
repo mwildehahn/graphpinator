@@ -1,44 +1,35 @@
 namespace Graphpinator\Value;
 
-final class ConvertRawValueVisitor implements \Graphpinator\Typesystem\TypeVisitor
-{
+final class ConvertRawValueVisitor implements \Graphpinator\Typesystem\TypeVisitor {
     use \Nette\SmartObject;
 
-    public function __construct(
-        private mixed $rawValue,
-        private \Graphpinator\Common\Path $path,
-    ) {}
+    public function __construct(private mixed $rawValue, private \Graphpinator\Common\Path $path) {}
 
-    public function visitType(\Graphpinator\Type\Type $type) : mixed
-    {
+    public function visitType(\Graphpinator\Type\Type $type): mixed {
         // nothing here
     }
 
-    public function visitInterface(\Graphpinator\Type\InterfaceType $interface) : mixed
-    {
+    public function visitInterface(\Graphpinator\Type\InterfaceType $interface): mixed {
         // nothing here
     }
 
-    public function visitUnion(\Graphpinator\Type\UnionType $union) : mixed
-    {
+    public function visitUnion(\Graphpinator\Type\UnionType $union): mixed {
         // nothing here
     }
 
-    public function visitInput(\Graphpinator\Type\InputType $input) : InputedValue
-    {
+    public function visitInput(\Graphpinator\Type\InputType $input): InputedValue {
         if ($this->rawValue === null) {
             return new \Graphpinator\Value\NullInputedValue($input);
         }
 
-        if (!$this->rawValue instanceof \stdClass) {
+        if (!$this->rawValue is KeyedContainer<_, _>) {
             throw new \Graphpinator\Exception\Value\InvalidValue($input->getName(), $this->rawValue, true);
         }
 
         return new InputValue($input, self::convertArgumentSet($input->getArguments(), $this->rawValue, $this->path));
     }
 
-    public function visitScalar(\Graphpinator\Type\ScalarType $scalar) : InputedValue
-    {
+    public function visitScalar(\Graphpinator\Type\ScalarType $scalar): InputedValue {
         if ($this->rawValue === null) {
             return new \Graphpinator\Value\NullInputedValue($scalar);
         }
@@ -48,8 +39,7 @@ final class ConvertRawValueVisitor implements \Graphpinator\Typesystem\TypeVisit
         return new \Graphpinator\Value\ScalarValue($scalar, $this->rawValue, true);
     }
 
-    public function visitEnum(\Graphpinator\Type\EnumType $enum) : InputedValue
-    {
+    public function visitEnum(\Graphpinator\Type\EnumType $enum): InputedValue {
         if ($this->rawValue === null) {
             return new \Graphpinator\Value\NullInputedValue($enum);
         }
@@ -57,19 +47,17 @@ final class ConvertRawValueVisitor implements \Graphpinator\Typesystem\TypeVisit
         return new \Graphpinator\Value\EnumValue($enum, $this->rawValue, true);
     }
 
-    public function visitNotNull(\Graphpinator\Type\NotNullType $notNull) : InputedValue
-    {
+    public function visitNotNull(\Graphpinator\Type\NotNullType $notNull): InputedValue {
         $value = $notNull->getInnerType()->accept($this);
 
-        if ($value instanceof \Graphpinator\Value\NullValue) {
+        if ($value is \Graphpinator\Value\NullValue) {
             throw new \Graphpinator\Exception\Value\ValueCannotBeNull(true);
         }
 
         return $value;
     }
 
-    public function visitList(\Graphpinator\Type\ListType $list) : InputedValue
-    {
+    public function visitList(\Graphpinator\Type\ListType $list): InputedValue {
         if ($this->rawValue === null) {
             return new \Graphpinator\Value\NullInputedValue($list);
         }
@@ -79,13 +67,13 @@ final class ConvertRawValueVisitor implements \Graphpinator\Typesystem\TypeVisit
         }
 
         $innerType = $list->getInnerType();
-        \assert($innerType instanceof \Graphpinator\Type\Contract\Inputable);
+        \assert($innerType is \Graphpinator\Type\Contract\Inputable);
 
-        $inner = [];
+        $inner = vec[];
         $listValue = $this->rawValue;
 
         foreach ($listValue as $index => $rawValue) {
-            $this->path->add($index . ' <list index>');
+            $this->path->add($index.' <list index>');
             $this->rawValue = $rawValue;
             $inner[] = $innerType->accept($this);
             $this->path->pop();
@@ -100,11 +88,10 @@ final class ConvertRawValueVisitor implements \Graphpinator\Typesystem\TypeVisit
         \Graphpinator\Argument\ArgumentSet $arguments,
         \stdClass $rawValue,
         \Graphpinator\Common\Path $path,
-    ) : \stdClass
-    {
-        $rawValue = self::mergeRaw($rawValue, (object) $arguments->getRawDefaults());
+    ): \stdClass {
+        $rawValue = self::mergeRaw($rawValue, (object)$arguments->getRawDefaults());
 
-        foreach ((array) $rawValue as $name => $temp) {
+        foreach ((array)$rawValue as $name => $temp) {
             if ($arguments->offsetExists($name)) {
                 continue;
             }
@@ -115,8 +102,10 @@ final class ConvertRawValueVisitor implements \Graphpinator\Typesystem\TypeVisit
         $inner = new \stdClass();
 
         foreach ($arguments as $argument) {
-            $path->add($argument->getName() . ' <argument>');
-            $inner->{$argument->getName()} = self::convertArgument($argument, $rawValue->{$argument->getName()} ?? null, $path);
+            $path->add($argument->getName().' <argument>');
+            $inner->{
+                $argument->getName()
+            } = self::convertArgument($argument, $rawValue->{$argument->getName()} ?? null, $path);
             $path->pop();
         }
 
@@ -127,30 +116,32 @@ final class ConvertRawValueVisitor implements \Graphpinator\Typesystem\TypeVisit
         \Graphpinator\Argument\Argument $argument,
         mixed $rawValue,
         \Graphpinator\Common\Path $path,
-    ) : ArgumentValue
-    {
+    ): ArgumentValue {
         $default = $argument->getDefaultValue();
 
-        if ($rawValue === null && $default instanceof \Graphpinator\Value\ArgumentValue) {
+        if ($rawValue === null && $default is \Graphpinator\Value\ArgumentValue) {
             return $default;
         }
 
-        return new ArgumentValue($argument, $argument->getType()->accept(new ConvertRawValueVisitor($rawValue, $path)), false);
+        return new ArgumentValue(
+            $argument,
+            $argument->getType()->accept(new ConvertRawValueVisitor($rawValue, $path)),
+            false,
+        );
     }
 
-    private static function mergeRaw(\stdClass $core, \stdClass $supplement) : \stdClass
-    {
-        foreach ((array) $supplement as $key => $value) {
+    private static function mergeRaw(dict<string, mixed> $core, dict<string, mixed> $supplement): dict<string, mixed> {
+        foreach ($supplement as $key => $value) {
             if (\property_exists($core, $key)) {
-                if ($core->{$key} instanceof \stdClass &&
-                    $supplement->{$key} instanceof \stdClass) {
-                    $core->{$key} = self::mergeRaw($core->{$key}, $supplement->{$key});
+                if ($core[$key] is KeyedContainer<_, _> && $supplement[$key] is KeyedContainer<_, _>) {
+                    /* HH_FIXME[4110] */
+                    $core[$key] = self::mergeRaw($core[$key], $supplement[$key]);
                 }
 
                 continue;
             }
 
-            $core->{$key} = $value;
+            $core[$key] = $value;
         }
 
         return $core;

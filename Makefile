@@ -6,6 +6,9 @@ build:
 install: build
 	docker run -v `pwd`:/app -it mwildehahn/graphpinator composer install
 
+update: build
+	docker run -v `pwd`:/app -it mwildehahn/graphpinator composer update
+
 hh_autoload:
 	docker run -v `pwd`:/app -it mwildehahn/graphpinator ./vendor/bin/hh-autoload
 

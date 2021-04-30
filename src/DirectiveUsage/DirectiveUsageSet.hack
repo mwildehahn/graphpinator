@@ -1,19 +1,15 @@
 namespace Graphpinator\DirectiveUsage;
 
-/**
- * @method \Graphpinator\DirectiveUsage\DirectiveUsage current() : object
- * @method \Graphpinator\DirectiveUsage\DirectiveUsage offsetGet($offset) : object
- */
-final class DirectiveUsageSet extends \Infinityloop\Utils\ObjectSet
-{
-    protected const INNER_CLASS = DirectiveUsage::class;
+final class DirectiveUsageSet extends \Infinityloop\Utils\ObjectSet<DirectiveUsage> {
 
-    public function validateInvariance(self $child) : void
-    {
+    public function validateInvariance(DirectiveUsageSet $child): void {
         foreach ($this as $index => $usage) {
-            if ($child->offsetExists($index) &&
-                $usage->getDirective() instanceof ($child->offsetGet($index)->getDirective()) &&
-                $usage->getArgumentValues()->isSame($child->offsetGet($index)->getArgumentValues())) {
+            $directive = $usage->getDirective();
+
+            if (
+                $child->offsetExists($index) &&
+                $usage->getArgumentValues()->isSame($child->offsetGet($index)->getArgumentValues())
+            ) {
                 continue;
             }
 
@@ -21,22 +17,19 @@ final class DirectiveUsageSet extends \Infinityloop\Utils\ObjectSet
         }
     }
 
-    public function validateCovariance(self $child) : void
-    {
+    public function validateCovariance(DirectiveUsageSet $child): void {
         self::compareVariance($this, $child);
     }
 
-    public function validateContravariance(self $child) : void
-    {
+    public function validateContravariance(DirectiveUsageSet $child): void {
         self::compareVariance($child, $this);
     }
 
-    private static function compareVariance(self $biggerSet, self $smallerSet) : void
-    {
+    private static function compareVariance(DirectiveUsageSet $biggerSet, DirectiveUsageSet $smallerSet): void {
         $childIndex = 0;
 
         foreach ($biggerSet as $index => $usage) {
-            if ($smallerSet->offsetExists($childIndex) && $usage->getDirective() instanceof ($smallerSet->offsetGet($childIndex)->getDirective())) {
+            if ($smallerSet->offsetExists($childIndex)) {
                 $usage->getDirective()->validateVariance(
                     $usage->getArgumentValues(),
                     $smallerSet->offsetGet($childIndex)->getArgumentValues(),
@@ -46,10 +39,7 @@ final class DirectiveUsageSet extends \Infinityloop\Utils\ObjectSet
                 continue;
             }
 
-            $usage->getDirective()->validateVariance(
-                $usage->getArgumentValues(),
-                null,
-            );
+            $usage->getDirective()->validateVariance($usage->getArgumentValues(), null);
         }
     }
 }

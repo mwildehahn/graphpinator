@@ -1,16 +1,9 @@
 namespace Graphpinator\Value;
 
-/**
- * @method \Graphpinator\Value\ArgumentValue current() : object
- * @method \Graphpinator\Value\ArgumentValue offsetGet($offset) : object
- */
-final class ArgumentValueSet extends \Infinityloop\Utils\ImplicitObjectMap
-{
-    protected const INNER_CLASS = \Graphpinator\Value\ArgumentValue::class;
+final class ArgumentValueSet extends \Infinityloop\Utils\ObjectMap<string, ArgumentValue> {
 
-    public function getValuesForResolver() : array
-    {
-        $return = [];
+    public function getValuesForResolver(): dict<string, mixed> {
+        $return = dict[];
 
         foreach ($this as $name => $argumentValue) {
             $return[$name] = $argumentValue->getValue()->getRawValue(true);
@@ -19,15 +12,15 @@ final class ArgumentValueSet extends \Infinityloop\Utils\ImplicitObjectMap
         return $return;
     }
 
-    public function applyVariables(\Graphpinator\Normalizer\VariableValueSet $variables) : void
-    {
+    public function applyVariables(\Graphpinator\Normalizer\VariableValueSet $variables): void {
         foreach ($this as $value) {
             $value->applyVariables($variables);
         }
     }
 
-    public function isSame(self $compare) : bool
-    {
+    public function isSame(?ArgumentValueSet $compare): bool {
+        if ($compare is null) return false;
+
         foreach ($compare as $lhs) {
             if ($this->offsetExists($lhs->getArgument()->getName())) {
                 if ($lhs->getValue()->isSame($this->offsetGet($lhs->getArgument()->getName())->getValue())) {
@@ -37,7 +30,7 @@ final class ArgumentValueSet extends \Infinityloop\Utils\ImplicitObjectMap
                 return false;
             }
 
-            if ($lhs->getValue()->isSame($lhs->getArgument()->getDefaultValue()->getValue())) {
+            if ($lhs->getValue()->isSame($lhs->getArgument()->getDefaultValue()?->getValue())) {
                 continue;
             }
 
@@ -49,7 +42,7 @@ final class ArgumentValueSet extends \Infinityloop\Utils\ImplicitObjectMap
                 continue;
             }
 
-            if ($lhs->getValue()->isSame($lhs->getArgument()->getDefaultValue()->getValue())) {
+            if ($lhs->getValue()->isSame($lhs->getArgument()->getDefaultValue()?->getValue())) {
                 continue;
             }
 
@@ -59,10 +52,7 @@ final class ArgumentValueSet extends \Infinityloop\Utils\ImplicitObjectMap
         return true;
     }
 
-    protected function getKey(object $object) : string
-    {
-        \assert($object instanceof ArgumentValue);
-
+    protected function getKey(ArgumentValue $object): string {
         return $object->getArgument()->getName();
     }
 }

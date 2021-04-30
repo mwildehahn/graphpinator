@@ -1,39 +1,33 @@
 namespace Graphpinator\DirectiveUsage;
 
-final class DirectiveUsage implements \Graphpinator\Typesystem\Component
-{
-    use \Nette\SmartObject;
+final class DirectiveUsage implements \Graphpinator\Typesystem\Component {
 
     private \Graphpinator\Directive\Contract\TypeSystemDefinition $directive;
     private \Graphpinator\Value\ArgumentValueSet $argumentValues;
 
     public function __construct(
         \Graphpinator\Directive\Contract\TypeSystemDefinition $directive,
-        array $arguments,
-    )
-    {
+        \Graphpinator\Argument\ArgumentSet $arguments,
+    ) {
         $this->directive = $directive;
         $this->argumentValues = new \Graphpinator\Value\ArgumentValueSet(
-            (array) \Graphpinator\Value\ConvertRawValueVisitor::convertArgumentSet(
+            (array)\Graphpinator\Value\ConvertRawValueVisitor::convertArgumentSet(
                 $directive->getArguments(),
-                (object) $arguments,
+                $arguments,
                 new \Graphpinator\Common\Path(),
             ),
         );
     }
 
-    public function getDirective() : \Graphpinator\Directive\Contract\TypeSystemDefinition
-    {
+    public function getDirective(): \Graphpinator\Directive\Contract\TypeSystemDefinition {
         return $this->directive;
     }
 
-    public function getArgumentValues() : \Graphpinator\Value\ArgumentValueSet
-    {
+    public function getArgumentValues(): \Graphpinator\Value\ArgumentValueSet {
         return $this->argumentValues;
     }
 
-    public function accept(\Graphpinator\Typesystem\ComponentVisitor $visitor) : mixed
-    {
+    public function accept(\Graphpinator\Typesystem\ComponentVisitor $visitor): mixed {
         return $visitor->visitDirectiveUsage($this);
     }
 }

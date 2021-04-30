@@ -1,37 +1,23 @@
 namespace Graphpinator\Argument;
 
-/**
- * @method \Graphpinator\Argument\Argument current() : object
- * @method \Graphpinator\Argument\Argument offsetGet($offset) : object
- */
-final class ArgumentSet extends \Infinityloop\Utils\ImplicitObjectMap
-{
-    protected const INNER_CLASS = Argument::class;
+final class ArgumentSet extends \Infinityloop\Utils\ObjectMap<string, Argument> {
+    private dict<string, mixed> $defaults = dict[];
 
-    private array $defaults = [];
-
-    public function getRawDefaults() : array
-    {
+    public function getRawDefaults(): dict<string, mixed> {
         return $this->defaults;
     }
 
-    public function offsetSet($offset, $value) : void
-    {
-        \assert($value instanceof Argument);
-
+    public function offsetSet(string $offset, Argument $value): void {
         parent::offsetSet($offset, $value);
 
         $defaultValue = $value->getDefaultValue();
 
-        if ($defaultValue instanceof \Graphpinator\Value\ArgumentValue) {
+        if ($defaultValue is \Graphpinator\Value\ArgumentValue) {
             $this->defaults[$value->getName()] = $defaultValue->getValue()->getRawValue();
         }
     }
 
-    protected function getKey(object $object) : string
-    {
-        \assert($object instanceof Argument);
-
+    protected function getKey(Argument $object): string {
         return $object->getName();
     }
 }

@@ -1,18 +1,15 @@
 namespace Graphpinator\Directive;
 
-final class TypeSystemDirectiveLocation
-{
-    use \Nette\StaticClass;
-
-    public const SCHEMA = 'SCHEMA'; // currently not supported
-    public const SCALAR = 'SCALAR'; // currently not supported
-    public const UNION = 'UNION'; // currently not supported
-    public const ENUM = 'ENUM'; // currently not supported
-    public const OBJECT = 'OBJECT';
-    public const INTERFACE = 'INTERFACE';
-    public const INPUT_OBJECT = 'INPUT_OBJECT';
-    public const FIELD_DEFINITION = 'FIELD_DEFINITION';
-    public const ARGUMENT_DEFINITION = 'ARGUMENT_DEFINITION';
-    public const INPUT_FIELD_DEFINITION = 'INPUT_FIELD_DEFINITION';
-    public const ENUM_VALUE = 'ENUM_VALUE';
+enum TypeSystemDirectiveLocation: string as string {
+    SCHEMA = 'SCHEMA'; // currently not supported
+    SCALAR = 'SCALAR'; // currently not supported
+    UNION = 'UNION'; // currently not supported
+    ENUM = 'ENUM'; // currently not supported
+    OBJECT = 'OBJECT';
+    INTERFACE = 'INTERFACE';
+    INPUT_OBJECT = 'INPUT_OBJECT';
+    FIELD_DEFINITION = 'FIELD_DEFINITION';
+    ARGUMENT_DEFINITION = 'ARGUMENT_DEFINITION';
+    INPUT_FIELD_DEFINITION = 'INPUT_FIELD_DEFINITION';
+    ENUM_VALUE = 'ENUM_VALUE';
 }
